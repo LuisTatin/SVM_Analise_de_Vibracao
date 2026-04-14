@@ -1,289 +1,164 @@
-# Detecção de Falhas em Máquinas Rotativas com Machine Learning (Pt-BR + EN)
+🇧🇷 Versão em Português (README.md)
 
-Projeto completo de Machine Learning aplicado à **manutenção preditiva industrial**, incluindo **pipeline de ETL (extração, transformação e carga)** para conversão de dados brutos (`.mat`) em dados estruturados (`.csv`), seguido de modelagem e avaliação de algoritmos.
+# ⚙️ Preditiva-IoT: Detecção de Falhas Industriais via Análise de Vibração
 
----
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
+![Scikit-Learn](https://img.shields.io/badge/Model-Scikit--Learn-F7931E?logo=scikit-learn)
+![Scipy](https://img.shields.io/badge/Signal_Processing-Scipy-8CAAE6?logo=scipy)
+![Pandas](https://img.shields.io/badge/Data_Engineering-Pandas-150458?logo=pandas)
+![Industry 4.0](https://img.shields.io/badge/Domain-Industry_4.0-success)
 
-## Visão Geral
-
-Em ambientes industriais, falhas em máquinas rotativas representam um dos principais fatores de:
-
-- Paradas não planejadas
-- Aumento de custos operacionais
-- Redução da vida útil dos equipamentos
-
-Este projeto propõe um pipeline completo para responder à seguinte pergunta:
-
-> É possível detectar falhas potenciais em máquinas rotativas a partir de sinais de vibração?
+Este repositório apresenta uma solução avançada de **Machine Learning para Manutenção Preditiva**, focada em detectar anomalias em máquinas rotativas utilizando sinais de vibração triaxiais. O projeto engloba desde a ingestão de ficheiros raw (MATLAB) até à extração de características no domínio do tempo e da frequência (Wavelets/FFT) e rigorosa avaliação estatística.
 
 ---
 
-## Arquitetura do Projeto
+## 📌 Project Overview (Visão de Negócio)
 
-O projeto foi estruturado como um pipeline de dados e Machine Learning, dividido em três camadas principais:
-
-### 🔹 1. ETL de Dados (Raw → Structured)
-
-- Extração de dados no formato `.mat` (MATLAB)
-- Conversão para `.csv` para uso em pipelines de ML
-- Organização dos dados para análise e modelagem
-
-Esse processo garante:
-
-- Reprodutibilidade
-- Interoperabilidade com ferramentas modernas (Python, Pandas, Scikit-learn)
-- Padronização do dataset
+* **Problem Statement:** Em chãos de fábrica e infraestruturas críticas, falhas em componentes mecânicos (como rolamentos e motores) resultam em paragens não planeadas, riscos de segurança e elevados custos de manutenção corretiva.
+* **Value Proposition:** Ao analisar a assinatura vibracional dos equipamentos em tempo quase-real, esta solução permite identificar padrões microscópicos de degradação antes que a falha funcional ocorra. 
+* **KPIs de Sucesso Impactados:**
+  * Aumento do **OEE** (Overall Equipment Effectiveness) através da redução do tempo de inatividade.
+  * Otimização dos custos de manutenção (redução de substituição prematura de peças).
+  * Aumento do **MTBF** (Mean Time Between Failures).
 
 ---
 
-### 🔹 2. Processamento de Sinais
+## 🏗️ Architecture & Engineering
 
-#### Pré-processamento
-- Normalização com **StandardScaler**
-- Preservação da magnitude do sinal
-- Redução de ruído
+A pipeline foi construída com um forte foco em Processamento Digital de Sinais (DSP) e Estatística.
 
-#### Transformação
-- Aplicação de **Wavelet (db4)** para:
-  - Filtrar ruídos
-  - Destacar padrões transitórios de falha
-  - Preparar o sinal para extração de características
+### 1. Data Pipeline (ETL)
+* Um script dedicado extrai os dados brutos de sensores no formato `.mat` (matrizes MATLAB de séries temporais), converte-os em DataFrames relacionais e rotula os dados como saudáveis (`0`) ou em falha (`1`).
 
----
+### 2. Signal Processing & Feature Engineering
+* **Denoising:** Aplicação de **Transformada Wavelet Discreta (Daubechies 4)** para atenuar o ruído industrial sem perder os picos transientes característicos de fissuras ou atritos.
+* **Domínio do Tempo:** Cálculo de métricas robustas (RMS, Curtose, Assimetria, Pico-a-Pico).
+* **Domínio da Frequência:** Aplicação de **Fast Fourier Transform (FFT)** para extrair espectros de potência e frequências medianas.
+* **Feature Selection:** Remoção de variáveis colineares (correlação de Pearson > 0.90) para prevenir *overfitting*.
 
-### 🔹 3. Feature Engineering
-
-#### Features Temporais
-- Média
-- Desvio padrão
-- Curtose
-- Assimetria
-- RMS
-- Pico-a-pico
-- Energia
-
-#### Features Espectrais
-- Frequência média
-- Desvio espectral
-- Curtose espectral
-- Potência de banda
-- Mediana da frequência
+### 3. Model Stack
+* Diversas arquiteturas foram comparadas via `GridSearchCV` (K-NN, Decision Trees, LDA, SVMs com kernels variados).
 
 ---
 
-### 🔹 4. Seleção de Features
+## 🚀 Get Started (Quick Start)
 
-- Análise de correlação
-- Redução dimensional
-- Seleção de um conjunto ótimo de variáveis (9 features)
+**1. Gerar o Dataset Estruturado**
+O script ETL irá ler os diretórios `archive/Healthy` e `archive/Faulty` e agregar tudo num único CSV.
+```bash
+python ETL.py
+```
 
----
-
-### 🔹 5. Modelagem
-
-Foram avaliados múltiplos algoritmos de classificação:
-
-- SVM (Linear, Quadrático, Cúbico, Gaussiano)
-- KNN (k=1, k=5, ponderado)
-- Árvore de Decisão
-- LDA (Linear Discriminant Analysis)
+**2. Executar o Pipeline de Treino e Avaliação**
+Este comando processará os sinais, fará a extração das features e avaliará os modelos, gerando gráficos de performance.
+```bash
+python SVM_Modelo_e_Avaliacao.py
+```
 
 ---
 
-## 🏆 Resultados
+## 📊 Model Performance & Engineering Excellence
 
-O modelo com melhor desempenho foi o **SVM Linear**, apresentando:
-
-- **Acurácia:** 97,73%
-- **Sensibilidade (Recall):** 100%
-- **Especificidade:** 95%
-
-### 💡 Interpretação
-
-- Detecção completa de falhas (sem falsos negativos)
-- Baixa taxa de falsos positivos
-- Alta confiabilidade para aplicações industriais críticas
+* **Performance de Topo:** O classificador final (Support Vector Machine com Kernel Linear) alcançou uma **Acurácia de 97.73%** e um **Recall/Sensibilidade de 100%**. Num contexto de saúde do ativo, falhar a deteção de um erro (Falso Negativo) é catastrófico, logo, otimizar para 100% de Recall demonstra uma compreensão crítica do negócio.
+* **Engineering Excellence:**
+  * **Testes Estatísticos Pareados:** Em vez de assumir que o melhor modelo venceu por mero acaso, o pipeline aplica o teste t de Student (`ttest_rel`) sobre as amostras de validação cruzada para garantir significância estatística real. 
 
 ---
 
-## 📊 Diferenciais Técnicos
+## 🛡️ AI Ethics & Best Practices
 
-Este projeto demonstra competências avançadas em:
-
-- ✔️ Engenharia de dados (ETL de `.mat` para `.csv`)
-- ✔️ Processamento de sinais com Wavelets
-- ✔️ Feature engineering (temporal e espectral)
-- ✔️ Avaliação comparativa de múltiplos modelos
-- ✔️ Construção de pipeline end-to-end de Machine Learning
-- ✔️ Aplicação prática em contexto industrial (manutenção preditiva)
+Num ambiente industrial, o "Black Box AI" gera desconfiança nos engenheiros de manutenção. Para garantir a **Interpretabilidade**:
+* O pipeline incorpora **Permutation Feature Importance**, rankeando as características espectrais e temporais exatas que sinalizam a quebra.
+* Inclui visualizações em 2D e 3D das fronteiras de decisão dos hiperplanos vetoriais.
 
 ---
 
-## Aplicações
+## 🛣️ Future Work (Roadmap)
 
-- Manutenção preditiva
-- Monitoramento de ativos industriais
-- Indústria 4.0
-- Sistemas de diagnóstico automatizado
-- IoT industrial (IIoT)
+* **Model Serialization:** Guardar o pipeline do Scikit-Learn com `joblib` para servir inferências dinâmicas.
+* **Edge Deployment:** Quantização do modelo SVM para implantação em microcontroladores acoplados à máquina (TinyML).
 
-
-- Roadmap
-	•	Deploy do modelo como API (Flask / FastAPI)
-	•	Integração com AWS (S3 + EC2 ou Lambda)
-	•	Pipeline automatizado de ingestão de dados
-	•	Monitoramento de modelo (MLOps)
-	•	Dashboard interativo (Streamlit / Power BI)
-
-👨‍💻 Autor
-
-Luis Tatin
-Engenheiro Mecatrônico | Data Science & Machine Learning | Instrutor de Tecnologia
-  
 ---
+**Desenvolvido por Luis Tatin**
 
-# Fault Detection in Rotating Machinery using Machine Learning
 
-A complete Machine Learning project applied to **industrial predictive maintenance**, including an **ETL pipeline (Extract, Transform, Load)** to convert raw data (`.mat`) into structured datasets (`.csv`), followed by model training and evaluation.
+# ⚙️ Predictive-IoT: Industrial Fault Detection via Vibration Analysis
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)
+![Scikit-Learn](https://img.shields.io/badge/Model-Scikit--Learn-F7931E?logo=scikit-learn)
+![Scipy](https://img.shields.io/badge/Signal_Processing-Scipy-8CAAE6?logo=scipy)
+![Pandas](https://img.shields.io/badge/Data_Engineering-Pandas-150458?logo=pandas)
+![Industry 4.0](https://img.shields.io/badge/Domain-Industry_4.0-success)
+
+This repository presents an advanced **Machine Learning solution for Predictive Maintenance**, focused on detecting anomalies in rotating machinery using triaxial vibration signals. The project covers the full lifecycle, from raw data ingestion (MATLAB files) to feature extraction in both time and frequency domains (Wavelets/FFT) and rigorous statistical evaluation.
 
 ---
 
-## Overview
+## 📌 Project Overview (Business Vision)
 
-In industrial environments, failures in rotating machinery are one of the main causes of:
-
-- Unplanned downtime  
-- Increased operational costs  
-- Reduced equipment lifespan  
-
-This project builds a full pipeline to answer the following question:
-
-> Is it possible to detect potential faults in rotating machines using vibration signals?
+* **Problem Statement:** On factory floors and in critical infrastructure, failures in mechanical components (such as bearings and motors) lead to unplanned downtime, safety risks, and high corrective maintenance costs.
+* **Value Proposition:** By analyzing the vibrational signature of equipment in near real-time, this solution identifies microscopic degradation patterns before functional failure occurs. 
+* **Impacted Success KPIs:**
+  * Increase in **OEE** (Overall Equipment Effectiveness) by reducing downtime.
+  * Maintenance cost optimization (reducing premature parts replacement).
+  * Extension of **MTBF** (Mean Time Between Failures).
 
 ---
 
-## Project Architecture
+## 🏗️ Architecture & Engineering
 
-The project is structured as a data and Machine Learning pipeline, divided into three main layers:
+The pipeline is heavily focused on Digital Signal Processing (DSP) and Statistics.
 
-### 🔹 1. Data ETL (Raw → Structured)
+### 1. Data Pipeline (ETL)
+* A dedicated script extracts raw sensor data from `.mat` formats (MATLAB time-series matrices), converts them into relational DataFrames, and labels the data as healthy (`0`) or faulty (`1`).
 
-- Extraction of data from `.mat` format (MATLAB)
-- Conversion to `.csv` for Machine Learning workflows
-- Data organization for analysis and modeling
+### 2. Signal Processing & Feature Engineering
+* **Denoising:** Application of **Discrete Wavelet Transform (Daubechies 4)** to attenuate industrial noise without losing the transient peaks characteristic of cracks or friction.
+* **Time Domain:** Calculation of robust metrics (RMS, Kurtosis, Skewness, Peak-to-Peak).
+* **Frequency Domain:** Implementation of **Fast Fourier Transform (FFT)** to extract power spectra and median frequencies.
+* **Feature Selection:** Removal of collinear variables (Pearson correlation > 0.90) to prevent overfitting.
 
-This process ensures:
-
-- Reproducibility  
-- Interoperability with modern tools (Python, Pandas, Scikit-learn)  
-- Dataset standardization  
-
----
-
-### 🔹 2. Signal Processing
-
-#### Preprocessing
-- Normalization using **StandardScaler**
-- Preservation of signal magnitude
-- Noise reduction
-
-#### Transformation
-- Application of **Wavelet (db4)** to:
-  - Filter noise  
-  - Highlight transient fault patterns  
-  - Prepare the signal for feature extraction  
+### 3. Model Stack
+* Various architectures were compared via `GridSearchCV` (K-NN, Decision Trees, LDA, SVMs with varied kernels).
 
 ---
 
-### 🔹 3. Feature Engineering
+## 🚀 Get Started (Quick Start)
 
-#### Temporal Features
-- Mean  
-- Standard deviation  
-- Kurtosis  
-- Skewness  
-- RMS  
-- Peak-to-peak  
-- Energy  
+**1. Generate the Structured Dataset**
+The ETL script will read the `archive/Healthy` and `archive/Faulty` directories and aggregate everything into a single CSV.
+```bash
+python ETL.py
+```
 
-#### Spectral Features
-- Mean frequency  
-- Spectral standard deviation  
-- Spectral kurtosis  
-- Band power  
-- Median frequency  
+**2. Run the Training & Evaluation Pipeline**
+This command will process the signals, extract features, evaluate the models, and generate performance plots.
+```bash
+python SVM_Modelo_e_Avaliacao.py
+```
 
 ---
 
-### 🔹 4. Feature Selection
+## 📊 Model Performance & Engineering Excellence
 
-- Correlation analysis  
-- Dimensionality reduction  
-- Selection of an optimal feature subset (9 features)  
-
----
-
-### 🔹 5. Modeling
-
-Multiple classification algorithms were evaluated:
-
-- SVM (Linear, Quadratic, Cubic, Gaussian)  
-- KNN (k=1, k=5, weighted)  
-- Decision Tree  
-- LDA (Linear Discriminant Analysis)  
+* **Top Performance:** The final classifier (Support Vector Machine with Linear Kernel) achieved an **Accuracy of 97.73%** and a **Recall/Sensitivity of 100%**. In an asset health context, missing a fault (False Negative) is catastrophic, so optimizing for 100% Recall demonstrates critical business acumen.
+* **Engineering Excellence:**
+  * **Paired Statistical Tests:** Instead of assuming the best model won by chance, the pipeline applies a Student's t-test (`ttest_rel`) on cross-validation folds to ensure true statistical significance. 
 
 ---
 
-## 🏆 Results
+## 🛡️ AI Ethics & Best Practices
 
-The best-performing model was the **Linear SVM**, achieving:
-
-- **Accuracy:** 97.73%  
-- **Sensitivity (Recall):** 100%  
-- **Specificity:** 95%  
-
-### 💡 Interpretation
-
-- Complete detection of faults (no false negatives)  
-- Low false positive rate  
-- High reliability for critical industrial applications  
+In an industrial environment, "Black Box AI" breeds distrust among maintenance engineers. To guarantee **Interpretability**:
+* The pipeline incorporates **Permutation Feature Importance**, ranking the exact spectral and temporal features that signal a breakdown.
+* It includes 2D and 3D visualizations of the vectorial hyperplane decision boundaries.
 
 ---
 
-## 📊 Technical Highlights
+## 🛣️ Future Work (Roadmap)
 
-This project demonstrates advanced skills in:
-
-- ✔️ Data engineering (ETL from `.mat` to `.csv`)  
-- ✔️ Signal processing using Wavelets  
-- ✔️ Feature engineering (temporal and spectral domains)  
-- ✔️ Comparative evaluation of multiple models  
-- ✔️ End-to-end Machine Learning pipeline development  
-- ✔️ Real-world industrial application (predictive maintenance)  
+* **Model Serialization:** Save the Scikit-Learn pipeline using `joblib` to serve dynamic inferences.
+* **Edge Deployment:** Quantization of the SVM model for deployment on machine-attached microcontrollers (TinyML).
 
 ---
-
-## Applications
-
-- Predictive maintenance  
-- Industrial asset monitoring  
-- Industry 4.0  
-- Automated fault diagnosis systems  
-- Industrial IoT (IIoT)  
-
----
-
-## Roadmap
-
-- Deploy the model as an API (Flask / FastAPI)  
-- Integrate with AWS (S3 + EC2 or Lambda)  
-- Build an automated data ingestion pipeline  
-- Implement model monitoring (MLOps)  
-- Develop an interactive dashboard (Streamlit / Power BI)  
-
----
-
-## 👨‍💻 Author
-
-**Luis Tatin**  
-Mechatronics Engineer | Data Science & Machine Learning | Technology Instructor  
+**Developed by Luis Tatin**
